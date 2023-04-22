@@ -20,38 +20,62 @@ enum file_format {
 
 class image {
  public:
-  image(int w, int h, int channels)  // put channels as a setter/getter instead
+  image(int w, int h, file_format ff,
+        int channels)  // put channels as a setter/getter instead
                                      // or just default it
-      : width_(w), height_(h), channel_nums_(channels){};
+      : width_(w), height_(h), format_(ff), channel_nums_(channels){};
+
+  void write_color(){};
 
   // save will append the file extension to the file_name
-  void save(std::string file_name, file_format ff, std::vector<color> pixels,
-            int quality = 100) {
-    if (ff == file_format::jpg) {
+  void save(std::string file_name, std::vector<color> pixels,
+            int samples_per_pixel, int quality = 100) {
+    if (format_ == file_format::jpg) {
       file_name.append(".jpg");
 
       unsigned char data[width_ * height_ * channel_nums_];
       int index = 0;
 
-      for (color c : pixels) {
-        data[index++] = 255.999 * c.x();
-        data[index++] = 255.999 * c.y();
-        data[index++] = 255.999 * c.z();
+      for (color p : pixels) {
+        auto r = p.x();
+        auto g = p.y();
+        auto b = p.z();
+
+        // Divide the color by the number of samples.
+        auto scale = 1.0 / samples_per_pixel;
+        r *= scale;
+        g *= scale;
+        b *= scale;
+
+        data[index++] = 256 * clamp(r, 0.0, 0.999);
+        data[index++] = 256 * clamp(g, 0.0, 0.999);
+        data[index++] = 256 * clamp(b, 0.0, 0.999);
       }
 
       stbi_write_jpg(file_name.c_str(), width_, height_, 3, data, quality);
       return;
     }
-    if (ff == file_format::ppm) {
+    if (format_ == file_format::ppm) {
       file_name.append(".ppm");
 
       std::ofstream ppm_file{file_name};
       ppm_file << "P3\n" << width_ << ' ' << height_ << "\n255\n";
 
-      for (color c : pixels) {
-        ppm_file << static_cast<int>(255.999 * c.x()) << ' '
-                 << static_cast<int>(255.999 * c.y()) << ' '
-                 << static_cast<int>(255.999 * c.z()) << '\n';
+      for (color p : pixels) {
+        auto r = p.x();
+        auto g = p.y();
+        auto b = p.z();
+
+        // Divide the color by the number of samples.
+        auto scale = 1.0 / samples_per_pixel;
+        r *= scale;
+        g *= scale;
+        b *= scale;
+
+        // Write the translated [0,255] value of each color component.
+        ppm_file << static_cast<int>(256 * clamp(r, 0.0, 0.999)) << ' '
+                 << static_cast<int>(256 * clamp(g, 0.0, 0.999)) << ' '
+                 << static_cast<int>(256 * clamp(b, 0.0, 0.999)) << '\n';
       }
     }
   };
@@ -59,6 +83,7 @@ class image {
  private:
   int width_;
   int height_;
+  file_format format_;
   int channel_nums_;
 };
 
