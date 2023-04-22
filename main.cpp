@@ -26,7 +26,7 @@ int main() {
   const auto aspect_ratio = 16.0 / 9.0;
   const int image_width = 400;
   const int image_height = static_cast<int>(image_width / aspect_ratio);
-  image img(image_width, image_height, file_format::jpg, 3);
+  jpg jpg_image(image_width, image_height);
   std::vector<color> pixels;
   const int samples_per_pixel = 100;
 
@@ -55,7 +55,7 @@ int main() {
     }
   }
 
-  img.save("img/jpg_image", pixels, samples_per_pixel, 100);
+  jpg_image.write("img/jpg_image", pixels, samples_per_pixel);
 
   std::cerr << "\nDone.\n";
   return 0;
