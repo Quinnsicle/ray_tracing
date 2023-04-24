@@ -10,10 +10,17 @@
 #include "lib/sphere.hpp"
 #include "lib/vec3.hpp"
 
-color ray_color(const ray& r, const hittable& world) {
+color ray_color(const ray& r, const hittable& world, int depth) {
   hit_record rec;
+
+  // If we've exceeded the ray bounce limit, no more light is gathered.
+  if (depth <= 0) {
+    return color(0, 0, 0);
+  }
+
   if (world.hit(r, 0, infinity, rec)) {
-    return 0.5 * (rec.normal + color(1, 1, 1));
+    point3 target = rec.p + rec.normal + random_unit_vector();
+    return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);
   }
   vec3 unit_direction = unit_vector(r.direction());
   auto t = 0.5 * (unit_direction.y() + 1.0);
@@ -29,6 +36,7 @@ int main() {
   jpg jpg_image(image_width, image_height);
   std::vector<color> pixels;
   const int samples_per_pixel = 100;
+  const int max_depth = 50;
 
   // World
   hittable_list world;
@@ -48,7 +56,7 @@ int main() {
         auto u = (i + random_double()) / (image_width - 1);
         auto v = (j + random_double()) / (image_height - 1);
         ray r = cam.get_ray(u, v);
-        pixel_color += ray_color(r, world);
+        pixel_color += ray_color(r, world, max_depth);
       }
 
       pixels.push_back(pixel_color);
