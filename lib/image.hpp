@@ -13,6 +13,22 @@
 #include "stb/stb_image_write.h"
 #include "vec3.hpp"
 
+void check_file(std::string file_name) {
+  std::fstream file;
+  file.open(file_name, std::fstream::in | std::fstream::app);
+
+  // check that file exists, if not then create it
+  if (!file) {
+    std::cout << "Cannot open " << file_name
+              << ", file does not exist. Creating new file..." << std::endl;
+
+    file.open(file_name,
+              std::fstream::in | std::fstream::out | std::fstream::trunc);
+    file << "\n";
+    file.close();
+  }
+}
+
 class img {
  public:
   virtual void write(std::string file_name, const std::vector<color>& pixels,
@@ -28,6 +44,8 @@ class jpg : public img {
   virtual void write(std::string file_name, const std::vector<color>& pixels,
                      const int& samples) const override {
     file_name.append(".jpg");
+
+    check_file(file_name);
 
     unsigned char data[width_ * height_ * channel_nums];
     int index = 0;
