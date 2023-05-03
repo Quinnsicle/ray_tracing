@@ -109,7 +109,7 @@ vec3 random_in_unit_sphere() {  // TODO there must be a more efficient way to do
 
 vec3 random_unit_vector() { return unit_vector(random_in_unit_sphere()); }
 
-// NOTE this may be a good diffuse method for subsurface scattering
+// Used for hemispherical scattering method
 vec3 random_in_hemisphere(const vec3 &normal) {
   vec3 in_unit_sphere = random_in_unit_sphere();
   if (dot(in_unit_sphere, normal) >
