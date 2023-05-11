@@ -5,13 +5,14 @@
 #include <iostream>
 #include <vector>
 
+#include "vec3.hpp"
+
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb/stb_image.h"
+#include <stb/stb_image.h>
 
 #define STBI_MSC_SECURE_CRT
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb/stb_image_write.h"
-#include "vec3.hpp"
+#include <stb/stb_image_write.h>
 
 void check_file(std::string file_name) {
   std::fstream file;

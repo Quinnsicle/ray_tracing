@@ -1,12 +1,15 @@
 CFLAGS = -std=c++17 -O2
 
-RayTracing: main.cpp
-	g++ $(CFLAGS) -o bin/RayTracing main.cpp 
+INCLUDE = -Iinclude
+
+RayTracer: RayTracer/main.cpp
+	@mkdir -p bin
+	g++ $(INCLUDE) $(CFLAGS) -o bin/RayTracer RayTracer/main.cpp 
 
 .PHONY: test clean
 
-test: RayTracing
-	./bin/RayTracing
+test: RayTracer
+	bin/RayTracer
 
 clean:
-	rm -f bin/RayTracing
+	rm -f bin/RayTracer

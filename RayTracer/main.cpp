@@ -1,15 +1,15 @@
 #include <iostream>
 #include <vector>
 
-#include "lib/camera.hpp"
-#include "lib/color.hpp"
-#include "lib/common.hpp"
-#include "lib/hittable_list.hpp"
-#include "lib/image.hpp"
-#include "lib/material.hpp"
-#include "lib/ray.hpp"
-#include "lib/sphere.hpp"
-#include "lib/vec3.hpp"
+#include "camera.hpp"
+#include "color.hpp"
+#include "common.hpp"
+#include "hittable_list.hpp"
+#include "image.hpp"
+#include "material.hpp"
+#include "ray.hpp"
+#include "sphere.hpp"
+#include "vec3.hpp"
 
 color ray_color(const ray& r, const hittable& world, int depth) {
   hit_record rec;
