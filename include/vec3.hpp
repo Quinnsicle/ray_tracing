@@ -89,7 +89,7 @@ inline vec3 operator*(double t, const vec3 &v) {
   return vec3(t * v.e[0], t * v.e[1], t * v.e[2]);
 }
 
-inline vec3 operator*(const vec3 &v, double t) { return v * t; }
+inline vec3 operator*(const vec3 &v, double t) { return t * v; }
 
 inline vec3 operator/(const vec3 v, double t) { return (1 / t) * v; }
 
@@ -137,6 +137,16 @@ vec3 random_in_unit_circle() {
     }
     return p;
   }
+}
+
+// uses Box-Muller Transform
+vec3 random_in_unit_disk() {
+  double x, y;
+  double r = sqrt(-2 * log(random_double(0, 1)));
+  double theta = 2 * M_PI * random_double(0, 1);
+  x = r * cos(theta);
+  y = r * sin(theta);
+  return vec3(x, y, 0);
 }
 
 vec3 reflect(const vec3 &v, const vec3 &n) { return v - 2 * dot(v, n) * n; }
