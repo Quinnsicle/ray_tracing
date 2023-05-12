@@ -5,22 +5,32 @@
 
 class camera {
  public:
-  camera() {
-    auto aspect_ratio = 16.0 / 9.0;
-    auto viewport_height = 2.0;
+  camera(point3 look_from, point3 look_at, vec3 up, double vertical_fov,
+         double aspect_ratio, double aperture, double focus_distance) {
+    auto theta = degrees_to_radians(vertical_fov);
+    auto h = std::tan(theta / 2);
+    auto viewport_height = 2.0 * h;
     auto viewport_width = aspect_ratio * viewport_height;
-    auto focal_length = 1.0;
 
-    auto origin = point3(0, 0, 0);
-    horizontal = vec3(viewport_width, 0, 0);
-    vertical = vec3(0, viewport_height, 0);
+    w = unit_vector(look_from - look_at);
+    u = unit_vector(cross(up, w));
+    v = cross(w, u);
+
+    origin = look_from;
+    horizontal = focus_distance * viewport_width * u;
+    vertical = focus_distance * viewport_height * v;
     lower_left_corner =
-        origin - horizontal / 2 - vertical / 2 - vec3(0, 0, focal_length);
+        origin - horizontal / 2 - vertical / 2 - focus_distance * w;
+
+    lens_radius = aperture / 2;
   }
 
-  ray get_ray(double u, double v) const {
-    return ray(origin,
-               lower_left_corner + u * horizontal + v * vertical - origin);
+  ray get_ray(double s, double t) const {
+    vec3 rd = lens_radius * random_in_unit_circle();
+    vec3 offset = u * rd.x() + v * rd.y();
+
+    return ray(origin + offset, lower_left_corner + s * horizontal +
+                                    t * vertical - origin - offset);
   }
 
  private:
@@ -28,6 +38,8 @@ class camera {
   point3 lower_left_corner;
   vec3 horizontal;
   vec3 vertical;
+  vec3 u, v, w;
+  double lens_radius;
 };
 
 #endif  // _RAY_TRACING_LIB_CAMERA_HPP_
