@@ -30,33 +30,33 @@ void check_file(std::string file_name) {
   }
 }
 
-class img {
+class Img {
  public:
-  virtual void write(std::string file_name, const std::vector<color>& pixels,
+  virtual void write(std::string file_name, const std::vector<Color>& pixels,
                      const int& samples) const = 0;
 
  private:
 };
 
-class jpg : public img {
+class Jpg : public Img {
  public:
-  jpg(const int w, const int h) : width_(w), height_(h) {}
+  Jpg(const int w, const int h) : width_(w), height_(h) {}
 
-  virtual void write(std::string file_name, const std::vector<color>& pixels,
+  virtual void write(std::string file_name, const std::vector<Color>& pixels,
                      const int& samples) const override {
-    file_name.append(".jpg");
+    file_name.append(".Jpg");
 
     check_file(file_name);
 
     unsigned char data[width_ * height_ * channel_nums];
     int index = 0;
 
-    for (color p : pixels) {
+    for (Color p : pixels) {
       auto r = p.x();
       auto g = p.y();
       auto b = p.z();
 
-      // Divide the color by the number of samples and gamma-correct for
+      // Divide the Color by the number of samples and gamma-correct for
       // gamma=2.0.
       auto scale = 1.0 / samples;
       r = sqrt(scale * r);
@@ -79,23 +79,23 @@ class jpg : public img {
   const int height_;
 };
 
-class ppm : public img {
+class ppm : public Img {
  public:
   ppm(int w, int h) : width_(w), height_(h) {}
 
-  virtual void write(std::string file_name, const std::vector<color>& pixels,
+  virtual void write(std::string file_name, const std::vector<Color>& pixels,
                      const int& samples) const override {
     file_name.append(".ppm");
 
     std::ofstream ppm_file{file_name};
     ppm_file << "P3\n" << width_ << ' ' << height_ << "\n255\n";
 
-    for (color p : pixels) {
+    for (Color p : pixels) {
       auto r = p.x();
       auto g = p.y();
       auto b = p.z();
 
-      // Divide the color by the number of samples and gamma-correct for
+      // Divide the Color by the number of samples and gamma-correct for
       // gamma=2.0.
       auto scale = 1.0 / samples;
       r = sqrt(scale * r);

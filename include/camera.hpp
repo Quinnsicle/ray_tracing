@@ -3,9 +3,9 @@
 
 #include "common.hpp"
 
-class camera {
+class Camera {
  public:
-  camera(point3 look_from, point3 look_at, vec3 up, double vertical_fov,
+  Camera(Point3 look_from, Point3 look_at, Vec3 up, double vertical_fov,
          double aspect_ratio, double aperture, double focus_distance) {
     auto theta = degrees_to_radians(vertical_fov);
     auto h = std::tan(theta / 2);
@@ -26,19 +26,19 @@ class camera {
   }
 
   ray get_ray(double s, double t) const {
-    vec3 rd = lens_radius * random_in_unit_circle();
-    vec3 offset = u * rd.x() + v * rd.y();
+    Vec3 rd = lens_radius * random_in_unit_circle();
+    Vec3 offset = u * rd.x() + v * rd.y();
 
     return ray(origin + offset, lower_left_corner + s * horizontal +
                                     t * vertical - origin - offset);
   }
 
  private:
-  point3 origin;
-  point3 lower_left_corner;
-  vec3 horizontal;
-  vec3 vertical;
-  vec3 u, v, w;
+  Point3 origin;
+  Point3 lower_left_corner;
+  Vec3 horizontal;
+  Vec3 vertical;
+  Vec3 u, v, w;
   double lens_radius;
 };
 

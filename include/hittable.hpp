@@ -7,8 +7,8 @@
 class material;
 
 struct hit_record {
-  point3 p;
-  vec3 normal;
+  Point3 p;
+  Vec3 normal;
   shared_ptr<material> mat_ptr;
   double t;
   bool front_face;
@@ -17,7 +17,7 @@ struct hit_record {
    * Sets face normal at geometry time instead of at material time.
    * The normal will always point towards the outside:    <-( )
    * */
-  inline void set_face_normal(const ray& r, const vec3& outward_normal) {
+  inline void set_face_normal(const ray& r, const Vec3& outward_normal) {
     front_face = dot(r.direction(), outward_normal) < 0;
     normal = front_face ? outward_normal : -outward_normal;
   }
