@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 
-#include "vec3.hpp"
+#include "Vec3.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
@@ -30,7 +30,7 @@ void check_file(std::string file_name) {
   }
 }
 
-class Img {
+class Image {
  public:
   virtual void write(std::string file_name, const std::vector<Color>& pixels,
                      const int& samples) const = 0;
@@ -38,7 +38,7 @@ class Img {
  private:
 };
 
-class Jpg : public Img {
+class Jpg : public Image {
  public:
   Jpg(const int w, const int h) : width_(w), height_(h) {}
 
@@ -79,7 +79,7 @@ class Jpg : public Img {
   const int height_;
 };
 
-class ppm : public Img {
+class ppm : public Image {
  public:
   ppm(int w, int h) : width_(w), height_(h) {}
 

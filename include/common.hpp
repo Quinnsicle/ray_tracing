@@ -48,7 +48,7 @@ inline double clamp(double x, double min, double max) {
 
 // Common Headers
 
-#include "ray.hpp"
-#include "vec3.hpp"
+#include "Ray.hpp"
+#include "Vec3.hpp"
 
 #endif  // _RAY_TRACING_LIB_COMMON_HPP_

@@ -1,21 +1,21 @@
 #ifndef _RAY_TRACING_LIB_MATERIAL_HPP_
 #define _RAY_TRACING_LIB_MATERIAL_HPP_
 
+#include "Hittable.hpp"
 #include "common.hpp"
-#include "hittable.hpp"
 
-class material {
+class Material {
  public:
-  virtual bool scatter(const ray& r_in, const hit_record& rec,
-                       Color& attenuation, ray& scattered) const = 0;
+  virtual bool scatter(const Ray& r_in, const hit_record& rec,
+                       Color& attenuation, Ray& scattered) const = 0;
 };
 
-class Lambertian : public material {
+class Lambertian : public Material {
  public:
   Lambertian(const Color& a) : albedo(a) {}
 
-  virtual bool scatter(const ray& r_in, const hit_record& rec,
-                       Color& attenuation, ray& scattered) const override {
+  virtual bool scatter(const Ray& r_in, const hit_record& rec,
+                       Color& attenuation, Ray& scattered) const override {
     auto scatter_direction = rec.normal + random_unit_vector();
 
     // Catch degenerate scatter direction
@@ -23,7 +23,7 @@ class Lambertian : public material {
       scatter_direction = rec.normal;
     }
 
-    scattered = ray(rec.p, scatter_direction);
+    scattered = Ray(rec.p, scatter_direction);
     attenuation = albedo;
     return true;
   }
@@ -31,14 +31,14 @@ class Lambertian : public material {
   Color albedo;
 };
 
-class Metal : public material {
+class Metal : public Material {
  public:
   Metal(const Color& a, double f) : albedo(a), fuzz(f < 1 ? f : 1) {}
 
-  virtual bool scatter(const ray& r_in, const hit_record& rec,
-                       Color& attenuation, ray& scattered) const override {
+  virtual bool scatter(const Ray& r_in, const hit_record& rec,
+                       Color& attenuation, Ray& scattered) const override {
     Vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
-    scattered = ray(rec.p, reflected + fuzz * random_in_unit_sphere());
+    scattered = Ray(rec.p, reflected + fuzz * random_in_unit_sphere());
     attenuation = albedo;
     return (dot(scattered.direction(), rec.normal) > 0);
   }
@@ -48,13 +48,13 @@ class Metal : public material {
   double fuzz;
 };
 
-class Dielectric : public material {
+class Dielectric : public Material {
  public:
   Dielectric(double index_of_refraction)
       : refraction_index(index_of_refraction) {}
 
-  virtual bool scatter(const ray& r_in, const hit_record& rec,
-                       Color& attenuation, ray& scattered) const override {
+  virtual bool scatter(const Ray& r_in, const hit_record& rec,
+                       Color& attenuation, Ray& scattered) const override {
     attenuation = Color(1.0, 1.0, 1.0);
     double refraction_ratio =
         rec.front_face ? (1.0 / refraction_index) : refraction_index;
@@ -70,7 +70,7 @@ class Dielectric : public material {
             ? reflect(unit_direction, rec.normal)
             : refract(unit_direction, rec.normal, refraction_ratio);
 
-    scattered = ray(rec.p, direction);
+    scattered = Ray(rec.p, direction);
     return true;
   }
 

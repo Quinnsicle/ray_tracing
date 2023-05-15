@@ -1,12 +1,12 @@
 #ifndef RAY_HPP
 #define RAY_HPP
 
-#include "vec3.hpp"
+#include "Vec3.hpp"
 
-class ray {
+class Ray {
  public:
-  ray() {}
-  ray(const Point3& origin, const Vec3& direction)
+  Ray() {}
+  Ray(const Point3& origin, const Vec3& direction)
       : orig(origin), dir(direction) {}
 
   Point3 origin() const { return orig; }

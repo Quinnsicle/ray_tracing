@@ -1,17 +1,17 @@
 #include <iostream>
 #include <vector>
 
-#include "camera.hpp"
+#include "Camera.hpp"
+#include "HittableList.hpp"
+#include "Image.hpp"
+#include "Material.hpp"
+#include "Ray.hpp"
+#include "Sphere.hpp"
+#include "Vec3.hpp"
 #include "color.hpp"
 #include "common.hpp"
-#include "hittable_list.hpp"
-#include "image.hpp"
-#include "material.hpp"
-#include "ray.hpp"
-#include "sphere.hpp"
-#include "vec3.hpp"
 
-Color ray_color(const ray& r, const hittable& world, int depth) {
+Color ray_color(const Ray& r, const Hittable& world, int depth) {
   hit_record rec;
 
   // If we've exceeded the ray bounce limit, no more light is gathered.
@@ -20,7 +20,7 @@ Color ray_color(const ray& r, const hittable& world, int depth) {
   }
 
   if (world.hit(r, 0.001, infinity, rec)) {
-    ray scattered;
+    Ray scattered;
     Color attenuation;
     if (rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
       return attenuation * ray_color(scattered, world, depth - 1);
@@ -32,8 +32,8 @@ Color ray_color(const ray& r, const hittable& world, int depth) {
   return (1.0 - t) * Color(1.0, 1.0, 1.0) + t * Color(0.5, 0.7, 1.0);
 }
 
-hittable_list random_scene() {
-  hittable_list world;
+HittableList random_scene() {
+  HittableList world;
 
   auto ground_material = make_shared<Lambertian>(Color(0.5, 0.5, 0.5));
   world.add(make_shared<Sphere>(Point3(0, -1000, 0), 1000, ground_material));
@@ -44,7 +44,7 @@ hittable_list random_scene() {
       Point3 center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
 
       if ((center - Point3(4, 0.2, 0)).length() > 0.9) {
-        shared_ptr<material> sphere_material;
+        shared_ptr<Material> sphere_material;
 
         if (choose_material < 0.8) {
           // diffuse
@@ -90,7 +90,7 @@ int main() {
   const int max_depth = 50;
 
   // World
-  hittable_list world = random_scene();
+  HittableList world = random_scene();
 
   // Camera
   Point3 look_from(13, 2, 3);
@@ -110,7 +110,7 @@ int main() {
       for (int s = 0; s < samples_per_pixel; ++s) {
         auto u = (i + random_double()) / (image_width - 1);
         auto v = (j + random_double()) / (image_height - 1);
-        ray r = cam.get_ray(u, v);
+        Ray r = cam.get_ray(u, v);
         pixel_color += ray_color(r, world, max_depth);
       }
 

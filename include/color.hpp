@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "common.hpp"
-#include "vec3.hpp"
+#include "Vec3.hpp"
 
 void write_color(std::ostream &out, Color pixel_color, int samples_per_pixel) {
   auto r = pixel_color.x();
