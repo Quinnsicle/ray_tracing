@@ -44,7 +44,7 @@ class Jpg : public Image {
 
   virtual void write(std::string file_name, const std::vector<Color>& pixels,
                      const int& samples) const override {
-    file_name.append(".Jpg");
+    file_name.append(".jpg");
 
     check_file(file_name);
 

@@ -7,6 +7,7 @@
 #include "Material.hpp"
 #include "Ray.hpp"
 #include "Sphere.hpp"
+#include "Texture.hpp"
 #include "Vec3.hpp"
 #include "color.hpp"
 #include "common.hpp"
@@ -35,7 +36,9 @@ Color ray_color(const Ray& r, const Hittable& world, int depth) {
 HittableList random_scene() {
   HittableList world;
 
-  auto ground_material = make_shared<Lambertian>(Color(0.5, 0.5, 0.5));
+  auto checker =
+      make_shared<CheckerTexture>(Color(0.2, 0.3, 0.1), Color(0.9, 0.9, 0.9));
+  auto ground_material = make_shared<Lambertian>(checker);
   world.add(make_shared<Sphere>(Point3(0, -1000, 0), 1000, ground_material));
 
   for (int a = -11; a < 11; a++) {
