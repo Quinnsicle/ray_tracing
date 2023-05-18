@@ -82,6 +82,15 @@ HittableList random_scene() {
   return world;
 }
 
+Color sample_pixel(const int& x, const int& y, const int& width,
+                   const int& height, const Camera& camera,
+                   const HittableList& world, const int& depth) {
+  auto u = (x + random_double()) / (width - 1);
+  auto v = (y + random_double()) / (height - 1);
+  Ray r = camera.get_ray(u, v);
+  return ray_color(r, world, depth);
+}
+
 int main() {
   // Image
   const auto aspect_ratio = 16.0 / 9.0;
@@ -111,17 +120,15 @@ int main() {
     for (int i = 0; i < image_width; ++i) {
       Color pixel_color(0, 0, 0);
       for (int s = 0; s < samples_per_pixel; ++s) {
-        auto u = (i + random_double()) / (image_width - 1);
-        auto v = (j + random_double()) / (image_height - 1);
-        Ray r = cam.get_ray(u, v);
-        pixel_color += ray_color(r, world, max_depth);
+        pixel_color += sample_pixel(i, j, image_width, image_height, cam, world,
+                                    max_depth);
       }
 
-      pixels.push_back(pixel_color);
+      pixels.push_back(pixel_color / samples_per_pixel);
     }
   }
 
-  jpg_image.write("img/jpg_image", pixels, samples_per_pixel);
+  jpg_image.write("img/jpg_image", pixels);
 
   std::cerr << "\nDone.\n";
   return 0;

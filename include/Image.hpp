@@ -32,8 +32,8 @@ void check_file(std::string file_name) {
 
 class Image {
  public:
-  virtual void write(std::string file_name, const std::vector<Color>& pixels,
-                     const int& samples) const = 0;
+  virtual void write(std::string file_name,
+                     const std::vector<Color>& pixels) const = 0;
 
  private:
 };
@@ -42,8 +42,8 @@ class Jpg : public Image {
  public:
   Jpg(const int w, const int h) : width_(w), height_(h) {}
 
-  virtual void write(std::string file_name, const std::vector<Color>& pixels,
-                     const int& samples) const override {
+  virtual void write(std::string file_name,
+                     const std::vector<Color>& pixels) const override {
     file_name.append(".jpg");
 
     check_file(file_name);
@@ -56,12 +56,10 @@ class Jpg : public Image {
       auto g = p.y();
       auto b = p.z();
 
-      // Divide the Color by the number of samples and gamma-correct for
-      // gamma=2.0.
-      auto scale = 1.0 / samples;
-      r = sqrt(scale * r);
-      g = sqrt(scale * g);
-      b = sqrt(scale * b);
+      // gamma-correct for gamma=2.0
+      r = sqrt(r);
+      g = sqrt(g);
+      b = sqrt(b);
 
       data[index++] = 255.999 * clamp(r, 0.0, 0.999);
       data[index++] = 255.999 * clamp(g, 0.0, 0.999);
@@ -83,8 +81,8 @@ class ppm : public Image {
  public:
   ppm(int w, int h) : width_(w), height_(h) {}
 
-  virtual void write(std::string file_name, const std::vector<Color>& pixels,
-                     const int& samples) const override {
+  virtual void write(std::string file_name,
+                     const std::vector<Color>& pixels) const override {
     file_name.append(".ppm");
 
     std::ofstream ppm_file{file_name};
@@ -95,12 +93,10 @@ class ppm : public Image {
       auto g = p.y();
       auto b = p.z();
 
-      // Divide the Color by the number of samples and gamma-correct for
-      // gamma=2.0.
-      auto scale = 1.0 / samples;
-      r = sqrt(scale * r);
-      g = sqrt(scale * g);
-      b = sqrt(scale * b);
+      // gamma-correct for gamma=2.0.
+      r = sqrt(r);
+      g = sqrt(g);
+      b = sqrt(b);
 
       ppm_file << static_cast<int>(255.999 * clamp(r, 0.0, 0.999)) << ' '
                << static_cast<int>(255.999 * clamp(g, 0.0, 0.999)) << ' '
