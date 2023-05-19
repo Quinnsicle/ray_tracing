@@ -77,9 +77,9 @@ class Jpg : public Image {
   const int height_;
 };
 
-class ppm : public Image {
+class Ppm : public Image {
  public:
-  ppm(int w, int h) : width_(w), height_(h) {}
+  Ppm(int w, int h) : width_(w), height_(h) {}
 
   virtual void write(std::string file_name,
                      const std::vector<Color>& pixels) const override {

@@ -1,4 +1,7 @@
+#include <algorithm>
 #include <iostream>
+#include <mutex>
+#include <thread>
 #include <vector>
 
 #include "Camera.hpp"
@@ -11,6 +14,17 @@
 #include "Vec3.hpp"
 #include "color.hpp"
 #include "common.hpp"
+
+#define PB_STR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PB_WIDTH 60
+
+void print_progress(double percentage) {
+  int display_percentage = (int)(percentage * 100);
+  int lpad = (int)(percentage * PB_WIDTH);
+  int rpad = PB_WIDTH - lpad;
+  printf("\r%3d%% [%.*s%*s]", display_percentage, lpad, PB_STR, rpad, "");
+  fflush(stdout);
+}
 
 Color ray_color(const Ray& r, const Hittable& world, int depth) {
   hit_record rec;
@@ -96,8 +110,9 @@ int main() {
   const auto aspect_ratio = 16.0 / 9.0;
   const int image_width = 1280;
   const int image_height = static_cast<int>(image_width / aspect_ratio);
+  const double total_pixels = image_height * image_width;
   Jpg jpg_image(image_width, image_height);
-  std::vector<Color> pixels;
+  std::vector<Color> pixels(total_pixels);
   const int samples_per_pixel = 100;
   const int max_depth = 50;
 
@@ -115,17 +130,33 @@ int main() {
              distance_to_focus);
 
   // Render
-  for (int j = image_height - 1; j >= 0; --j) {
-    std::cerr << "\rScanLines remaining: " << j << std::flush;
-    for (int i = 0; i < image_width; ++i) {
-      Color pixel_color(0, 0, 0);
-      for (int s = 0; s < samples_per_pixel; ++s) {
-        pixel_color += sample_pixel(i, j, image_width, image_height, cam, world,
-                                    max_depth);
-      }
+  const int num_threads = std::thread::hardware_concurrency();
+  std::vector<std::thread> threads(num_threads);
+  std::mutex pixels_mutex;
+  int progress_count = 0;
 
-      pixels.push_back(pixel_color / samples_per_pixel);
-    }
+  for (int t = 0; t < num_threads; ++t) {
+    threads[t] = std::thread([&, t]() {
+      for (int j = image_height - 1 - t; j >= 0; j -= num_threads) {
+        for (int i = 0; i < image_width; ++i) {
+          Color pixel_color(0, 0, 0);
+          for (int s = 0; s < samples_per_pixel; ++s) {
+            pixel_color += sample_pixel(i, j, image_width, image_height, cam,
+                                        world, max_depth);
+          }
+
+          std::lock_guard<std::mutex> guard(pixels_mutex);
+          pixels[(image_height - j - 1) * image_width + i] =
+              (pixel_color / samples_per_pixel);
+          progress_count++;
+        }
+        print_progress(progress_count / total_pixels);
+      }
+    });
+  }
+
+  for (auto& thread : threads) {
+    thread.join();
   }
 
   jpg_image.write("img/jpg_image", pixels);
