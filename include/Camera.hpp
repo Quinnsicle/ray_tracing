@@ -19,8 +19,8 @@ class Camera {
     origin = look_from;
     horizontal = focus_distance * viewport_width * u;
     vertical = focus_distance * viewport_height * v;
-    lower_left_corner =
-        origin - horizontal / 2 - vertical / 2 - focus_distance * w;
+    top_left_corner =
+        origin - horizontal / 2 + vertical / 2 - focus_distance * w;
 
     lens_radius = aperture / 2;
   }
@@ -29,13 +29,13 @@ class Camera {
     Vec3 rd = lens_radius * random_in_unit_circle();
     Vec3 offset = u * rd.x() + v * rd.y();
 
-    return Ray(origin + offset, lower_left_corner + s * horizontal +
+    return Ray(origin + offset, top_left_corner + s * horizontal -
                                     t * vertical - origin - offset);
   }
 
  private:
   Point3 origin;
-  Point3 lower_left_corner;
+  Point3 top_left_corner;
   Vec3 horizontal;
   Vec3 vertical;
   Vec3 u, v, w;

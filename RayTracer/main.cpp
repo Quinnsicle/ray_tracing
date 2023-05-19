@@ -137,7 +137,7 @@ int main() {
 
   for (int t = 0; t < num_threads; ++t) {
     threads[t] = std::thread([&, t]() {
-      for (int j = image_height - 1 - t; j >= 0; j -= num_threads) {
+      for (int j = t; j < image_height; j += num_threads) {
         for (int i = 0; i < image_width; ++i) {
           Color pixel_color(0, 0, 0);
           for (int s = 0; s < samples_per_pixel; ++s) {
@@ -146,8 +146,7 @@ int main() {
           }
 
           std::lock_guard<std::mutex> guard(pixels_mutex);
-          pixels[(image_height - j - 1) * image_width + i] =
-              (pixel_color / samples_per_pixel);
+          pixels[i + (j * image_width)] = (pixel_color / samples_per_pixel);
           progress_count++;
         }
         print_progress(progress_count / total_pixels);
