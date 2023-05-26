@@ -26,7 +26,8 @@ void print_progress(double percentage) {
   fflush(stdout);
 }
 
-Color ray_color(const Ray& r, const Hittable& world, int depth) {
+Color ray_color(const Ray& r, const Color& background, const Hittable& world,
+                int depth) {
   hit_record rec;
 
   // If we've exceeded the ray bounce limit, no more light is gathered.
@@ -34,17 +35,20 @@ Color ray_color(const Ray& r, const Hittable& world, int depth) {
     return Color(0, 0, 0);
   }
 
-  if (world.hit(r, 0.001, infinity, rec)) {
-    Ray scattered;
-    Color attenuation;
-    if (rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
-      return attenuation * ray_color(scattered, world, depth - 1);
-    }
-    return Color(0, 0, 0);
+  // If the ray hits nothing, return the background color.
+  if (!world.hit(r, 0.001, infinity, rec)) {
+    return background;
   }
-  Vec3 unit_direction = unit_vector(r.direction());
-  auto t = 0.5 * (unit_direction.y() + 1.0);
-  return (1.0 - t) * Color(1.0, 1.0, 1.0) + t * Color(0.5, 0.7, 1.0);
+
+  Ray scattered;
+  Color attenuation;
+  Color emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
+
+  if (!rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
+    return emitted;
+  }
+  return emitted +
+         attenuation * ray_color(scattered, background, world, depth - 1);
 }
 
 HittableList random_scene() {
@@ -74,7 +78,10 @@ HittableList random_scene() {
           auto fuzz = random_double(0, 0.5);
           sphere_material = make_shared<Metal>(albedo, fuzz);
           world.add(make_shared<Sphere>(center, 0.2, sphere_material));
-
+        } else if (choose_material < 0.98) {
+          // Light
+          sphere_material = make_shared<DiffuseLight>(Color(1, 1, 1));
+          world.add(make_shared<Sphere>(center, 0.2, sphere_material));
         } else {
           // glass
           sphere_material = make_shared<Dielectric>(1.5);
@@ -93,16 +100,20 @@ HittableList random_scene() {
   auto material3 = make_shared<Metal>(Color(0.7, 0.6, 0.5), 0.0);
   world.add(make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3));
 
+  auto material4 = make_shared<DiffuseLight>(Color(1, 1, 1));
+  world.add(make_shared<Sphere>(Point3(8, 1, 0), 1.0, material4));
+
   return world;
 }
 
 Color sample_pixel(const int& x, const int& y, const int& width,
                    const int& height, const Camera& camera,
-                   const HittableList& world, const int& depth) {
+                   const Color& background, const HittableList& world,
+                   const int& depth) {
   auto u = (x + random_double()) / (width - 1);
   auto v = (y + random_double()) / (height - 1);
   Ray r = camera.get_ray(u, v);
-  return ray_color(r, world, depth);
+  return ray_color(r, background, world, depth);
 }
 
 int main() {
@@ -118,6 +129,7 @@ int main() {
 
   // World
   HittableList world = random_scene();
+  Color background = Color(0, 0, 0);
 
   // Camera
   Point3 look_from(13, 2, 3);
@@ -142,7 +154,7 @@ int main() {
           Color pixel_color(0, 0, 0);
           for (int s = 0; s < samples_per_pixel; ++s) {
             pixel_color += sample_pixel(i, j, image_width, image_height, cam,
-                                        world, max_depth);
+                                        background, world, max_depth);
           }
 
           std::lock_guard<std::mutex> guard(pixels_mutex);
