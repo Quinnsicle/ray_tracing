@@ -11,7 +11,8 @@ class Sphere : public Hittable {
       : center(cen), radius(r), mat_ptr(m){};
 
   virtual bool hit(const Ray& r, double t_min, double t_max,
-                   hit_record& rec) const override;
+                   HitRecord& rec) const override;
+  virtual bool bounding_box(AxisAlignedBoundingBox& output_box) const override;
 
  public:
   Point3 center;
@@ -36,7 +37,7 @@ class Sphere : public Hittable {
 };
 
 bool Sphere::hit(const Ray& r, double t_min, double t_max,
-                 hit_record& rec) const {
+                 HitRecord& rec) const {
   Vec3 oc = r.origin() - center;
   auto a = r.direction().length_squared();
   auto half_b = dot(oc, r.direction());
@@ -64,6 +65,13 @@ bool Sphere::hit(const Ray& r, double t_min, double t_max,
   get_sphere_uv(outward_normal, rec.u, rec.v);
   rec.mat_ptr = mat_ptr;
 
+  return true;
+}
+
+bool Sphere::bounding_box(AxisAlignedBoundingBox& output_box) const {
+  output_box = AxisAlignedBoundingBox(
+      center - Vec3(radius, radius, radius) * inverse_sin45,
+      center + Vec3(radius, radius, radius) * inverse_sin45);
   return true;
 }
 

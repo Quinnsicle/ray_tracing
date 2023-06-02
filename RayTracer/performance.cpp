@@ -19,7 +19,7 @@
 #include "common.hpp"
 
 Color ray_color(const Ray& r, const Hittable& world, int depth) {
-  hit_record rec;
+  HitRecord rec;
 
   // If we've exceeded the ray bounce limit, no more light is gathered.
   if (depth <= 0) {

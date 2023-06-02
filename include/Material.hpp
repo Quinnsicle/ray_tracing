@@ -7,7 +7,7 @@
 
 class Material {
  public:
-  virtual bool scatter(const Ray& r_in, const hit_record& rec,
+  virtual bool scatter(const Ray& r_in, const HitRecord& rec,
                        Color& attenuation, Ray& scattered) const = 0;
 
   virtual Color emitted(double u, double v, const Point3& p) const {
@@ -20,7 +20,7 @@ class Lambertian : public Material {
   Lambertian(const Color& a) : albedo(make_shared<SolidColor>(a)) {}
   Lambertian(shared_ptr<Texture> a) : albedo(a) {}
 
-  virtual bool scatter(const Ray& r_in, const hit_record& rec,
+  virtual bool scatter(const Ray& r_in, const HitRecord& rec,
                        Color& attenuation, Ray& scattered) const override {
     auto scatter_direction = rec.normal + random_unit_vector();
 
@@ -41,7 +41,7 @@ class Metal : public Material {
  public:
   Metal(const Color& a, double f) : albedo(a), fuzz(f < 1 ? f : 1) {}
 
-  virtual bool scatter(const Ray& r_in, const hit_record& rec,
+  virtual bool scatter(const Ray& r_in, const HitRecord& rec,
                        Color& attenuation, Ray& scattered) const override {
     Vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
     scattered = Ray(rec.p, reflected + fuzz * random_in_unit_sphere());
@@ -59,7 +59,7 @@ class Dielectric : public Material {
   Dielectric(double index_of_refraction)
       : refraction_index(index_of_refraction) {}
 
-  virtual bool scatter(const Ray& r_in, const hit_record& rec,
+  virtual bool scatter(const Ray& r_in, const HitRecord& rec,
                        Color& attenuation, Ray& scattered) const override {
     attenuation = Color(1.0, 1.0, 1.0);
     double refraction_ratio =
@@ -97,7 +97,7 @@ class DiffuseLight : public Material {
   // DiffuseLight(shared_ptr<texture>) : emit(a) {}
   DiffuseLight(Color c) : emit(make_shared<SolidColor>(c)) {}
 
-  virtual bool scatter(const Ray& r_in, const hit_record& rec,
+  virtual bool scatter(const Ray& r_in, const HitRecord& rec,
                        Color& attenuation, Ray& scattered) const override {
     return false;
   }

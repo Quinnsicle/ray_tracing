@@ -1,12 +1,13 @@
 #ifndef HITTABLE_HPP
 #define HITTABLE_HPP
 
+#include "AxisAlignedBoundingBox.hpp"
 #include "Ray.hpp"
 #include "common.hpp"
 
 class Material;
 
-struct hit_record {
+struct HitRecord {
   Point3 p;
   Vec3 normal;
   shared_ptr<Material> mat_ptr;
@@ -28,7 +29,8 @@ struct hit_record {
 class Hittable {
  public:
   virtual bool hit(const Ray& r, double t_min, double t_max,
-                   hit_record& rec) const = 0;
+                   HitRecord& rec) const = 0;
+  virtual bool bounding_box(AxisAlignedBoundingBox& output_box) const = 0;
 };
 
 #endif

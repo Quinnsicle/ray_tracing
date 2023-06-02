@@ -21,15 +21,16 @@ class HittableList : public Hittable {
   void add(shared_ptr<Hittable> object) { objects.push_back(object); }
 
   virtual bool hit(const Ray& r, double t_min, double t_max,
-                   hit_record& rec) const override;
+                   HitRecord& rec) const override;
+  virtual bool bounding_box(AxisAlignedBoundingBox& output_box) const override;
 
  public:
   std::vector<shared_ptr<Hittable>> objects;
 };
 
 bool HittableList::hit(const Ray& r, double t_min, double t_max,
-                       hit_record& rec) const {
-  hit_record hit_rec;  // is this necessary?
+                       HitRecord& rec) const {
+  HitRecord hit_rec;  // is this necessary?
   bool hit_anything = false;
   auto closest_so_far = t_max;
 
@@ -42,6 +43,25 @@ bool HittableList::hit(const Ray& r, double t_min, double t_max,
   }
 
   return hit_anything;
+}
+
+bool HittableList::bounding_box(AxisAlignedBoundingBox& output_box) const {
+  if (objects.empty()) {
+    return false;
+  }
+
+  AxisAlignedBoundingBox temp_box;
+  bool first_box = true;
+
+  for (const auto& object : objects) {
+    if (!object->bounding_box(temp_box)) {
+      return false;
+    }
+    output_box = first_box ? temp_box : surrounding_box(output_box, temp_box);
+    first_box = false;
+  }
+
+  return true;
 }
 
 #endif  // _RAY_TRACING_LIB_HITTABLE_LIST_HPP_

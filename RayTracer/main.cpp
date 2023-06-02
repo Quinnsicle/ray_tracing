@@ -28,7 +28,7 @@ void print_progress(double percentage) {
 
 Color ray_color(const Ray& r, const Color& background, const Hittable& world,
                 int depth) {
-  hit_record rec;
+  HitRecord rec;
 
   // If we've exceeded the ray bounce limit, no more light is gathered.
   if (depth <= 0) {
