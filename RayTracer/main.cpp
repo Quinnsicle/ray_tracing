@@ -80,7 +80,7 @@ HittableList random_scene() {
           world.add(make_shared<Sphere>(center, 0.2, sphere_material));
         } else if (choose_material < 0.98) {
           // Light
-          sphere_material = make_shared<DiffuseLight>(Color(1, 1, 1));
+          sphere_material = make_shared<DiffuseLight>(Color::random());
           world.add(make_shared<Sphere>(center, 0.2, sphere_material));
         } else {
           // glass
@@ -100,8 +100,8 @@ HittableList random_scene() {
   auto material3 = make_shared<Metal>(Color(0.7, 0.6, 0.5), 0.0);
   world.add(make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3));
 
-  auto material4 = make_shared<DiffuseLight>(Color(1, 1, 1));
-  world.add(make_shared<Sphere>(Point3(8, 1, 0), 1.0, material4));
+  auto sunlight = make_shared<DiffuseLight>(Color(10, 9, 8));
+  world.add(make_shared<Sphere>(Point3(80, 300, 300), 100.0, sunlight));
 
   return world;
 }
@@ -124,7 +124,7 @@ int main() {
   const double total_pixels = image_height * image_width;
   Jpg jpg_image(image_width, image_height);
   std::vector<Color> pixels(total_pixels);
-  const int samples_per_pixel = 100;
+  const int samples_per_pixel = 10000;
   const int max_depth = 50;
 
   // World
