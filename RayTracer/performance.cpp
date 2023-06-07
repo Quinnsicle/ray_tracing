@@ -7,6 +7,7 @@
 #include <thread>
 #include <vector>
 
+#include "Bvh.hpp"
 #include "Camera.hpp"
 #include "HittableList.hpp"
 #include "Image.hpp"
@@ -90,7 +91,7 @@ HittableList random_scene() {
 
 Color sample_pixel(const int& x, const int& y, const int& width,
                    const int& height, const Camera& camera,
-                   const HittableList& world, const int& depth) {
+                   const Hittable& world, const int& depth) {
   auto u = (x + random_double()) / (width - 1);
   auto v = (y + random_double()) / (height - 1);
   Ray r = camera.get_ray(u, v);
@@ -121,13 +122,35 @@ int main() {
              distance_to_focus);
 
   // Render
-  const int num_threads = std::thread::hardware_concurrency();
-  std::vector<std::thread> threads(num_threads);
-  std::mutex pixels_mutex;
+
+  // track single threaded performance
 
   std::vector<Color> pixels1(total_pixels);
 
+  auto start_time_st = std::chrono::high_resolution_clock::now();
+
+  for (int j = 0; j < image_height; ++j) {
+    for (int i = 0; i < image_width; ++i) {
+      Color pixel_color(0, 0, 0);
+      for (int s = 0; s < samples_per_pixel; ++s) {
+        pixel_color += sample_pixel(i, j, image_width, image_height, cam, world,
+                                    max_depth);
+      }
+      pixels1[i + (j * image_width)] = (pixel_color / samples_per_pixel);
+    }
+  }
+  auto end_time_st = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double, std::milli> st_time =
+      end_time_st - start_time_st;
+  std::cerr << "\nSingle-threaded time: " << st_time.count() << '\n';
+  jpg_image.write("img/performance/st_image", pixels1);
+
   // track multithreaded performance
+  const int num_threads = std::thread::hardware_concurrency();
+  std::vector<std::thread> threads(num_threads);
+  std::mutex pixels_mutex;
+  std::vector<Color> pixels2(total_pixels);
+
   auto start_time_mt = std::chrono::high_resolution_clock::now();
 
   for (int t = 0; t < num_threads; ++t) {
@@ -141,7 +164,7 @@ int main() {
           }
 
           std::lock_guard<std::mutex> guard(pixels_mutex);
-          pixels1[i + (j * image_width)] = (pixel_color / samples_per_pixel);
+          pixels2[i + (j * image_width)] = (pixel_color / samples_per_pixel);
         }
       }
     });
@@ -151,41 +174,50 @@ int main() {
     thread.join();
   }
   auto end_time_mt = std::chrono::high_resolution_clock::now();
-
-  // track single threaded performance
-
-  std::vector<Color> pixels2(total_pixels);
-
-  auto start_time_st = std::chrono::high_resolution_clock::now();
-
-  for (int j = 0; j < image_height; ++j) {
-    for (int i = 0; i < image_width; ++i) {
-      Color pixel_color(0, 0, 0);
-      for (int s = 0; s < samples_per_pixel; ++s) {
-        pixel_color += sample_pixel(i, j, image_width, image_height, cam, world,
-                                    max_depth);
-      }
-
-      std::lock_guard<std::mutex> guard(pixels_mutex);
-      pixels2[i + (j * image_width)] = (pixel_color / samples_per_pixel);
-    }
-  }
-  auto end_time_st = std::chrono::high_resolution_clock::now();
-
   std::chrono::duration<double, std::milli> mt_time =
       end_time_mt - start_time_mt;
-  std::chrono::duration<double, std::milli> st_time =
-      end_time_st - start_time_st;
+  std::cerr << "Multi-threaded time: " << mt_time.count() << '\n';
+  jpg_image.write("img/performance/mt_image", pixels2);
 
-  std::cerr << "\nDone.\n";
-  std::cerr << "\n\nMulti-threaded time: " << mt_time.count() << '\n';
-  std::cerr << "\nSingle-threaded time: " << st_time.count() << '\n';
+  // track bvh performance
+  std::vector<Color> pixels3(total_pixels);
+  BvhNode world_bvh = BvhNode(world);
+
+  auto start_time_bvh = std::chrono::high_resolution_clock::now();
+
+  for (int t = 0; t < num_threads; ++t) {
+    threads[t] = std::thread([&, t]() {
+      for (int j = t; j < image_height; j += num_threads) {
+        for (int i = 0; i < image_width; ++i) {
+          Color pixel_color(0, 0, 0);
+          for (int s = 0; s < samples_per_pixel; ++s) {
+            pixel_color += sample_pixel(i, j, image_width, image_height, cam,
+                                        world_bvh, max_depth);
+          }
+
+          std::lock_guard<std::mutex> guard(pixels_mutex);
+          pixels3[i + (j * image_width)] = (pixel_color / samples_per_pixel);
+        }
+      }
+    });
+  }
+
+  for (auto& thread : threads) {
+    thread.join();
+  }
+  auto end_time_bvh = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double, std::milli> bvh_time =
+      end_time_bvh - start_time_bvh;
+  std::cerr << "BVH time: " << bvh_time.count() << '\n';
+  jpg_image.write("img/performance/bvh_image", pixels3);
 
   char hostname[HOST_NAME_MAX];
   gethostname(hostname, HOST_NAME_MAX);
-  std::cerr << "\n\nSystem: " << hostname << '\n';
+  std::cerr << "\nSystem: " << hostname << '\n';
   std::cerr << "Number of threads: " << num_threads << '\n';
-  std::cerr << "Total Improvement: " << st_time.count() / mt_time.count()
+  std::cerr << "Threading Improvement: " << st_time.count() / mt_time.count()
+            << " times faster!\n";
+  std::cerr << "BVH Improvement: " << mt_time.count() / bvh_time.count()
             << " times faster!\n";
 
   return 0;

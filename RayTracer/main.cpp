@@ -52,6 +52,16 @@ Color ray_color(const Ray& r, const Color& background, const Hittable& world,
          attenuation * ray_color(scattered, background, world, depth - 1);
 }
 
+Color sample_pixel(const int& x, const int& y, const int& width,
+                   const int& height, const Camera& camera,
+                   const Color& background, const Hittable& world,
+                   const int& depth) {
+  auto u = (x + random_double()) / (width - 1);
+  auto v = (y + random_double()) / (height - 1);
+  Ray r = camera.get_ray(u, v);
+  return ray_color(r, background, world, depth);
+}
+
 HittableList random_scene() {
   HittableList world;
 
@@ -106,16 +116,6 @@ HittableList random_scene() {
 
   return HittableList(make_shared<BvhNode>(world));
   ;
-}
-
-Color sample_pixel(const int& x, const int& y, const int& width,
-                   const int& height, const Camera& camera,
-                   const Color& background, const Hittable& world,
-                   const int& depth) {
-  auto u = (x + random_double()) / (width - 1);
-  auto v = (y + random_double()) / (height - 1);
-  Ray r = camera.get_ray(u, v);
-  return ray_color(r, background, world, depth);
 }
 
 int main() {
@@ -175,6 +175,5 @@ int main() {
 
   jpg_image.write("img/jpg_image", pixels);
 
-  std::cerr << "\nDone.\n";
   return 0;
 }
