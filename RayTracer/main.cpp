@@ -4,6 +4,7 @@
 #include <thread>
 #include <vector>
 
+#include "Bvh.hpp"
 #include "Camera.hpp"
 #include "HittableList.hpp"
 #include "Image.hpp"
@@ -103,12 +104,13 @@ HittableList random_scene() {
   auto sunlight = make_shared<DiffuseLight>(Color(10, 9, 8));
   world.add(make_shared<Sphere>(Point3(80, 300, 300), 100.0, sunlight));
 
-  return world;
+  return HittableList(make_shared<BvhNode>(world));
+  ;
 }
 
 Color sample_pixel(const int& x, const int& y, const int& width,
                    const int& height, const Camera& camera,
-                   const Color& background, const HittableList& world,
+                   const Color& background, const Hittable& world,
                    const int& depth) {
   auto u = (x + random_double()) / (width - 1);
   auto v = (y + random_double()) / (height - 1);
@@ -124,11 +126,12 @@ int main() {
   const double total_pixels = image_height * image_width;
   Jpg jpg_image(image_width, image_height);
   std::vector<Color> pixels(total_pixels);
-  const int samples_per_pixel = 10000;
+  const int samples_per_pixel = 100;
   const int max_depth = 50;
 
   // World
-  HittableList world = random_scene();
+  HittableList objects = random_scene();
+
   Color background = Color(0, 0, 0);
 
   // Camera
@@ -154,7 +157,7 @@ int main() {
           Color pixel_color(0, 0, 0);
           for (int s = 0; s < samples_per_pixel; ++s) {
             pixel_color += sample_pixel(i, j, image_width, image_height, cam,
-                                        background, world, max_depth);
+                                        background, objects, max_depth);
           }
 
           std::lock_guard<std::mutex> guard(pixels_mutex);

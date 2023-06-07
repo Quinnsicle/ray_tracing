@@ -70,8 +70,8 @@ bool Sphere::hit(const Ray& r, double t_min, double t_max,
 
 bool Sphere::bounding_box(AxisAlignedBoundingBox& output_box) const {
   output_box = AxisAlignedBoundingBox(
-      center - Vec3(radius, radius, radius) * inverse_sin45,
-      center + Vec3(radius, radius, radius) * inverse_sin45);
+      center - Vec3(radius, radius, radius) /* * inverse_sin45*/,
+      center + Vec3(radius, radius, radius) /* * inverse_sin45*/);
   return true;
 }
 
