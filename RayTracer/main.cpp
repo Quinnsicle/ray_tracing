@@ -115,7 +115,47 @@ HittableList random_scene() {
   world.add(make_shared<Sphere>(Point3(80, 300, 300), 100.0, sunlight));
 
   return HittableList(make_shared<BvhNode>(world));
-  ;
+}
+
+HittableList solar_scene() {
+  HittableList objects;
+
+  auto sun_material = make_shared<DiffuseLight>(Color(5, 1, 1));
+  objects.add(make_shared<Sphere>(Point3(0, 0, 0), 432.690, sun_material));
+
+  auto mercury_material = make_shared<Lambertian>(Color(120, 253, 10));
+  objects.add(
+      make_shared<Sphere>(Point3(40'194, 0, 0), 1.516, mercury_material));
+
+  auto venus_material = make_shared<Lambertian>(Color(230, 253, 10));
+  objects.add(
+      make_shared<Sphere>(Point3(67'077, 0, 0), 3.7604, venus_material));
+
+  auto earth_material = make_shared<Lambertian>(Color(1, 1, 253));
+  objects.add(
+      make_shared<Sphere>(Point3(92'960, 0, 0), 3.9588, earth_material));
+
+  auto mars_material = make_shared<Lambertian>(Color(253, 1, 1));
+  objects.add(
+      make_shared<Sphere>(Point3(155'780, 0, 0), 2.1061, mars_material));
+
+  auto jupiter_material = make_shared<Lambertian>(Color(10, 253, 10));
+  objects.add(
+      make_shared<Sphere>(Point3(460'640, 0, 0), 43.441, jupiter_material));
+
+  auto saturn_material = make_shared<Lambertian>(Color(10, 253, 10));
+  objects.add(
+      make_shared<Sphere>(Point3(909'600, 0, 0), 36.184, saturn_material));
+
+  auto uranus_material = make_shared<Lambertian>(Color(10, 253, 10));
+  objects.add(
+      make_shared<Sphere>(Point3(1'825'700, 0, 0), 15.759, uranus_material));
+
+  auto neptune_material = make_shared<Lambertian>(Color(10, 253, 10));
+  objects.add(
+      make_shared<Sphere>(Point3(2'779'500, 0, 0), 15.299, neptune_material));
+
+  return HittableList(make_shared<BvhNode>(objects));
 }
 
 int main() {
@@ -130,18 +170,38 @@ int main() {
   const int max_depth = 50;
 
   // World
-  HittableList objects = random_scene();
+  HittableList scene;
+
+  Point3 look_from;
+  Point3 look_at;
+  auto vfov = 40.0;
+  auto aperture = 0.0;
+  std::string scene_name;
+
+  switch (2) {
+    case 1:
+      scene_name = "random_spheres";
+      scene = random_scene();
+      look_from = Point3(13, 2, 3);
+      look_at = Point3(0, 0, 0);
+      aperture = 0.1;
+      break;
+    case 2:
+      scene_name = "solar_system";
+      scene = solar_scene();
+      look_from = Point3(93'964, 0, 8);
+      look_at = Point3(0, 0, -500);
+      aperture = 0.1;
+      break;
+  }
 
   Color background = Color(0, 0, 0);
 
   // Camera
-  Point3 look_from(13, 2, 3);
-  Point3 look_at(0, 0, 0);
   Vec3 up(0, 1, 0);
   auto distance_to_focus = (look_from - look_at).length();
-  auto aperture = 0.1;
 
-  Camera cam(look_from, look_at, up, 20, aspect_ratio, aperture,
+  Camera cam(look_from, look_at, up, vfov, aspect_ratio, aperture,
              distance_to_focus);
 
   // Render
@@ -157,7 +217,7 @@ int main() {
           Color pixel_color(0, 0, 0);
           for (int s = 0; s < samples_per_pixel; ++s) {
             pixel_color += sample_pixel(i, j, image_width, image_height, cam,
-                                        background, objects, max_depth);
+                                        background, scene, max_depth);
           }
 
           std::lock_guard<std::mutex> guard(pixels_mutex);
@@ -173,7 +233,7 @@ int main() {
     thread.join();
   }
 
-  jpg_image.write("img/jpg_image", pixels);
+  jpg_image.write("img/" + scene_name, pixels);
 
   return 0;
 }
