@@ -1,0 +1,28 @@
+#! /bin/bash
+ 
+# Generate the contents of a compile_commands.json file for the current
+# directory which should be the top of the oper1a repository.
+ 
+STB_PATH="/home/qoconnor/repos/"
+PWD=$(pwd)
+ 
+if [[ -z  "$COMPILE_FLAGS" ]]
+then
+    COMPILE_FLAGS="-Iinclude -isystem ${STB_PATH} -isystem /usr/include/c++/11 -isystem /usr/include/x86_64-linux-gnu/c++/11 -isystem /usr/include/c++/11/backward -isystem /usr/lib/gcc/x86_64-linux-gnu/11/include -isystem /usr/lib/gcc/x86_64-linux-gnu/11/include-fixed -isystem /usr/include/x86_64-linux-gnu -std=c++17 -O2"
+fi
+ 
+output="["
+  
+for f in $(git ls-files '*.cpp')
+do
+    output+="{"
+    output+="\"directory\": \"${PWD}\","
+    output+="\"command\": \"g++ ${COMPILE_FLAGS} -o \\\"${f/%.cpp/.o}\\\" \\\"${f}\\\"\","
+    output+="\"file\": \"${f}\""
+    output+="}"
+    output+=","
+done
+output+="]"
+echo ${output} | sed '$d'
+
+echo ${output} > compile_commands.json

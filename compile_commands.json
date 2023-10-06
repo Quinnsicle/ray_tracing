@@ -1,0 +1,12 @@
+[
+  {
+    "directory": "/home/qoconnor/repos/ray_tracing",
+    "command": "g++ -I include -isystem /home/qoconnor/repos/ -isystem /usr/include/c++/11 -isystem /usr/include/x86_64-linux-gnu/c++/11 -isystem /usr/include/c++/11/backward -isystem /usr/lib/gcc/x86_64-linux-gnu/11/include -isystem /usr/lib/gcc/x86_64-linux-gnu/11/include-fixed -isystem /usr/include/x86_64-linux-gnu -std=c++17 -o \"RayTracer/main.o\" \"RayTracer/main.cpp\"",
+    "file": "RayTracer/main.cpp"
+  },
+  {
+    "directory": "/home/qoconnor/repos/ray_tracing",
+    "command": "g++ -I include -isystem /home/qoconnor/repos/ -isystem /usr/include/c++/11 -isystem /usr/include/x86_64-linux-gnu/c++/11 -isystem /usr/include/c++/11/backward -isystem /usr/lib/gcc/x86_64-linux-gnu/11/include -isystem /usr/lib/gcc/x86_64-linux-gnu/11/include-fixed -isystem /usr/include/x86_64-linux-gnu -std=c++17 -o \"RayTracer/performance.o\" \"RayTracer/performance.cpp\"",
+    "file": "RayTracer/performance.cpp"
+  }
+]
