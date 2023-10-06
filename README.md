@@ -22,9 +22,9 @@ To build and run simply use
 ### Performance
 
 - Single-threaded time: 107021 ms
-Multi-threaded time: 35014.3 ms
-BVH time: 27063 ms
-System: i7-9850H CPU @ 2.60GHz
-Number of threads: 12
-Threading Improvement: 3.0565 times faster!
-BVH Improvement: 1.29381 times faster!
+- Multi-threaded time: 35014.3 ms
+- VH time: 27063 ms
+- System: i7-9850H CPU @ 2.60GHz
+- Number of threads: 12
+- Threading Improvement: 3.0565 times faster!
+- BVH Improvement: 1.29381 times faster!
